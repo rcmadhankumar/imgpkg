@@ -144,13 +144,13 @@ jobs:
 
           echo "$MULTILINE_STRING"
           
-          gh release view $RELEASE_TAG --notes > release_notes.txt
+          gh release view $RELEASE_TAG --json body | jq -r '.body' > release_notes.txt
 
           MULTILINE_STRING+="$(cat release_notes.txt)"
 
           echo "$MULTILINE_STRING"
 
-          
+
           gh release edit $RELEASE_TAG --notes $MULTILINE_STRING
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
