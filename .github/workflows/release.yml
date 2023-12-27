@@ -121,7 +121,37 @@ jobs:
           RELEASE_TAG=$(git describe --tags --abbrev=0)
           RELEASE_ID=$(gh release view $RELEASE_TAG --json id -q .id)
 
-          gh release edit $RELEASE_TAG --notes "Your multilinv e\nrelease notes here."
+          MULTILINE_STRING="""
+          ### Verify checksums file signature
+
+          The checksums file provided within the artifacts attached to this release is signed using [Cosign](https://docs.sigstore.dev/cosign/overview/) with GitHub OIDC. To validate the signature of this file, run the following commands:
+
+          \`\`\`shell
+          # Download the checksums file, certificate and signature
+          curl -LO https://github.com/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Tag }}/checksums.txt
+          curl -LO https://github.com/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Tag }}/checksums.txt.pem
+          curl -LO https://github.com/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Tag }}/checksums.txt.sig
+
+          # Verify the checksums file
+          cosign verify-blob checksums.txt \
+            --certificate checksums.txt.pem \
+            --signature checksums.txt.sig \
+            --certificate-identity-regexp=https://github.com/{{ .Env.GITHUB_REPOSITORY_OWNER }} \
+            --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+          \`\`\`
+          """
+
+
+          echo "$MULTILINE_STRING"
+          
+          gh release view $RELEASE_TAG --notes > release_notes.txt
+
+          MULTILINE_STRING+="$(cat release_notes.txt)"
+
+          echo "$MULTILINE_STRING"
+
+          
+          gh release edit $RELEASE_TAG --notes $MULTILINE_STRING
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OWNER: ${{ github.repository_owner }}
