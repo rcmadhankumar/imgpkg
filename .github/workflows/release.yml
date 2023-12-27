@@ -118,7 +118,13 @@ jobs:
           )
       
       - run: |
-          gh release edit v0.0.14  --notes "fsjvbhe"
+          RELEASE_TAG=$(git describe --tags --abbrev=0)
+          RELEASE_ID=$(gh release view $RELEASE_TAG --json id -q .id)
+
+          gh release edit $RELEASE_ID --notes <<EOF
+          Your multiline
+          release notes here.
+          EOF
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OWNER: ${{ github.repository_owner }}
