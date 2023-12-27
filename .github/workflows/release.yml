@@ -148,10 +148,10 @@ jobs:
 
           MULTILINE_STRING+="$(cat release_notes.txt)"
 
-          echo "$MULTILINE_STRING"
+          echo "$MULTILINE_STRING" >> notes.txt
 
 
-          gh release edit $RELEASE_TAG --notes $MULTILINE_STRING
+          gh release edit $RELEASE_TAG --notes-file notes.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OWNER: ${{ github.repository_owner }}
