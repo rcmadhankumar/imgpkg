@@ -118,7 +118,7 @@ jobs:
           )
       
       - run: |
-          gh release edit ${{ github.ref }} --notes "
+          gh release edit v0.0.12 --notes "fsjvbhe
           ### new nsflvjkhedjfkjlk; checksums file signature
 
           The checksums file provided within the artifacts attached to this release is signed using [Cosign](https://docs.sigstore.dev/cosign/overview/) with GitHub OIDC. To validate the signature of this file, run the following commands:
