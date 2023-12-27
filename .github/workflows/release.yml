@@ -121,7 +121,7 @@ jobs:
           RELEASE_TAG=$(git describe --tags --abbrev=0)
           RELEASE_ID=$(gh release view $RELEASE_TAG --json id -q .id)
 
-          gh release edit $RELEASE_ID --notes "Your multilinv e\nrelease notes here."
+          gh release edit $RELEASE_TAG --notes "Your multilinv e\nrelease notes here."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OWNER: ${{ github.repository_owner }}
