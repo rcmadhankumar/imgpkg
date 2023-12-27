@@ -34,6 +34,17 @@ checksum:
   name_template: 'checksums.txt'
   algorithm: sha256
   disable: false
+signs:
+  - artifacts: checksum
+    certificate: '${artifact}.pem'
+    cmd: cosign
+    args:
+      - sign-blob
+      - "--yes"
+      - '--output-certificate=${certificate}'
+      - '--output-signature=${signature}'
+      - '${artifact}'
+    output: true
 snapshot:
   name_template: "{{ .Tag }}-next"
 release:
@@ -75,3 +86,77 @@ changelog:
     exclude:
       - '^docs:'
       - typo
+
+release:
+  prerelease: auto
+  header: |
+    ## Installation
+
+    To install `{{ .ProjectName }}`, download one of the pre-built binaries provided for your platform from the artifacts attached to this release.
+
+    For instance, if you are using Linux on an AMD64 architecture:
+
+    ```shell
+    # Download the binary
+    curl -LO https://github.com/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Tag }}/{{ .ProjectName }}-v{{ .Version }}.linux.amd64
+
+    # Move the binary in to your PATH
+    mv {{ .ProjectName }}-v{{ .Version }}.linux.amd64 /usr/local/bin/{{ .ProjectName }}
+
+    # Make the binary executable
+    chmod +x /usr/local/bin/{{ .ProjectName }}
+    ```
+
+    ### Verify checksums file signature
+
+    The checksums file provided within the artifacts attached to this release is signed using [Cosign](https://docs.sigstore.dev/cosign/overview/) with GitHub OIDC. To validate the signature of this file, run the following commands:
+
+    ```shell
+    # Download the checksums file, certificate and signature
+    curl -LO https://github.com/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Tag }}/{{ .ProjectName }}-v{{ .Version }}.checksums.txt
+    curl -LO https://github.com/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Tag }}/{{ .ProjectName }}-v{{ .Version }}.checksums.pem
+    curl -LO https://github.com/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Tag }}/{{ .ProjectName }}-v{{ .Version }}.checksums.sig
+
+    # Verify the checksums file
+    cosign verify-blob {{ .ProjectName }}-v{{ .Version }}.checksums.txt \
+      --certificate {{ .ProjectName }}-v{{ .Version }}.checksums.pem \
+      --signature {{ .ProjectName }}-v{{ .Version }}.checksums.sig \
+      --certificate-identity-regexp=https://github.com/{{ .Env.GITHUB_REPOSITORY_OWNER }} \
+      --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+    ```
+
+    ### Verify binary integrity
+
+    To verify the integrity of the downloaded binary, you can utilize the checksums file after having validated its signature:
+
+    ```shell
+    # Verify the binary using the checksums file
+    sha256sum -c {{ .ProjectName }}-v{{ .Version }}.checksums.txt --ignore-missing
+    ```
+
+    ## Container Images
+    
+    The `{{ .ProjectName }}` binaries are also available as container images, based on Debian (slim) and Alpine Linux. The Debian-based container images include any dependencies which may be required to make use of certain key services, such as GnuPG, AWS KMS, Azure Key Vault, and Google Cloud KMS. The Alpine-based container images are smaller in size, but do not include these dependencies.
+
+    These container images are available for the following architectures: `linux/amd64` and `linux/arm64`.
+
+    ### GitHub Container Registry
+
+    - `ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }}`
+    - `ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }}-alpine`
+
+    ### Quay.io
+
+    - `quay.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }}`
+    - `quay.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }}-alpine`
+
+    ### Verify container image signature
+
+    The container images are signed using [Cosign](https://docs.sigstore.dev/cosign/overview/) with GitHub OIDC. To validate the signature of an image, run the following command:
+
+    ```shell
+    cosign verify ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }} \
+      --certificate-identity-regexp=https://github.com/{{ .Env.GITHUB_REPOSITORY_OWNER }} \
+      --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+      -o text
+    ```
