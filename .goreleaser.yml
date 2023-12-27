@@ -70,23 +70,6 @@ release:
   disable: false
 
   header: |
-    ## Installation
-
-    To install `{{ .ProjectName }}`, download one of the pre-built binaries provided for your platform from the artifacts attached to this release.
-
-    For instance, if you are using Linux on an AMD64 architecture:
-
-    ```shell
-    # Download the binary
-    curl -LO https://github.com/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Tag }}/{{ .ProjectName }}-linux-amd64
-
-    # Move the binary in to your PATH
-    mv {{ .ProjectName }}-linux-amd64 /usr/local/bin/{{ .ProjectName }}
-
-    # Make the binary executable
-    chmod +x /usr/local/bin/{{ .ProjectName }}
-    ```
-
     ### Verify checksums file signature
 
     The checksums file provided within the artifacts attached to this release is signed using [Cosign](https://docs.sigstore.dev/cosign/overview/) with GitHub OIDC. To validate the signature of this file, run the following commands:
@@ -107,9 +90,12 @@ release:
 
     ### Verify binary integrity
 
-    To verify the integrity of the downloaded binary, you can utilize the checksums file after having validated its signature:
-
+    To verify the integrity of the downloaded binary, you can utilize the checksums file after having validated its signature.
+    For instance, if you are using Linux on an AMD64 architecture:
     ```shell
+    # Download the binary
+    curl -LO https://github.com/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Tag }}/{{ .ProjectName }}-linux-amd64
+    
     # Verify the binary using the checksums file
     sha256sum -c checksums.txt --ignore-missing
     ```
